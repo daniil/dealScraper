@@ -4,6 +4,8 @@ require 'open-uri'
 require 'digest/md5'
 require 'mail'
 
+@deal_disabled = true
+
 def prompt(question, default)
 	print(question)
 	result = gets.strip
@@ -18,15 +20,33 @@ def prompt(question, default)
 	end
 end
 
-@url = prompt "Enter URL (required): ", nil
-@refresh_rate = prompt "Enter Refresh Rate (default: 30sec): ", 30
-@email_to = prompt "Enter recipient email (required): ", nil
-@email_from = prompt "Enter senders email (required): ", nil
-@password = prompt "Enter Password: (required): ", nil
-@subject = prompt "Enter subject (default: Dealscraper Alert!): ", "Dealscraper Alert!"
-@message = prompt "Enter subject (default: Deal in now available.): ", "Deal in now available."
-puts @url, @refresh_rate, @email_to, @email_from.to_s, @subject, @message
-@deal_disabled = true
+def start
+	@url = prompt "\nEnter URL (required): ", nil
+	@refresh_rate = prompt "Enter Refresh Rate (default: 30sec): ", 30
+	@email_to = prompt "Enter recipient email (required): ", nil
+	@email_from = prompt "Enter senders email (required): ", nil
+	@password = prompt "Enter Password: (required): ", nil
+	@subject = prompt "Enter subject (default: Dealscraper Alert!): ", "Dealscraper Alert!"
+	@message = prompt "Enter subject (default: Deal in now available.): ", "Deal in now available."
+	user_confirm
+end
+
+def user_confirm
+	puts "\n=============================================="
+	puts "\nURL: " + @url
+	puts "Refresh Rate: " + @refresh_rate
+	puts "Recipient: " + @email_to
+	puts "Sender: " + @email_from
+	puts "Password: " + @password
+	puts "Subject: " + @subject
+	puts "Message: " + @message
+	puts "\n=============================================="
+	print "\nIs the information correct? (y/n)" 
+	if gets.strip.downcase[0, 1] == "n"
+		puts "\nPlease re-enter your information"
+		start		
+	end
+end
 
 def scrape_el
 	page = Nokogiri::HTML(open(@url.to_s))   
@@ -34,10 +54,9 @@ def scrape_el
 	digest = Digest::MD5.hexdigest(button_el.to_s)
 end
 
+start
+
 @disabled_digest = scrape_el
-
-puts 'disabledHEX: ' + @disabled_digest
-
 
 while @deal_disabled
 	if scrape_el != @disabled_digest
@@ -58,11 +77,10 @@ while @deal_disabled
 			from: @email_from.to_s,
 			subject: @subject.to_s,
 			body: @message.to_s
-		).deliver!
-			
+			).deliver!
+		
 		@deal_disabled = false
 	end
 	puts 'Still Disabled'
 	sleep @refresh_rate.to_i
 end
-
