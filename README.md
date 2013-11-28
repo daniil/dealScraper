@@ -9,4 +9,4 @@ Steps for use:
 2. Install Bundler "gem install bundler"
 3. Run ruby dealfind.rb and follow prompts to enter information
 
-Special ShoutOUT! to Daniil Molodkov (daniil)
+Special ShoutOUT! to Daniil Molodkov (daniil)[https://github.com/daniil]
